@@ -1,4 +1,4 @@
-//  Copyright (c) 2013, Facebook, Inc.  All rights reserved.
+//  Copyright (c) 2013, Facebook, In.  All rights reserved.
 //  This source code is licensed under the BSD-style license found in the
 //  LICENSE file in the root directory of this source tree. An additional grant
 //  of patent rights can be found in the PATENTS file in the same directory.
@@ -598,6 +598,11 @@ SuperVersion* ColumnFamilyData::GetThreadLocalSuperVersion(
   // have swapped in kSVObsolete. We re-check the value at when returning
   // SuperVersion back to thread local, with an atomic compare and swap.
   // The superversion will need to be released if detected to be stale.
+  
+  // Nan: Swap essentially encapsulates the exchange method in std::atomic
+  // the idea of this line is that we would like to replace the "potentially staled"
+  // SuperVersion in the local memory of threads with the latest value, i.e. SuperVersion::kSVInUse
+  // Note: this function returns the value of the superversion pointer before the call 
   void* ptr = local_sv_->Swap(SuperVersion::kSVInUse);
   // Invariant:
   // (1) Scrape (always) installs kSVObsolete in ThreadLocal storage
@@ -605,7 +610,9 @@ SuperVersion* ColumnFamilyData::GetThreadLocalSuperVersion(
   // should only keep kSVInUse before ReturnThreadLocalSuperVersion call
   // (if no Scrape happens).
   assert(ptr != SuperVersion::kSVInUse);
+  // Nan: get the most recent superversion
   sv = static_cast<SuperVersion*>(ptr);
+  // Nan: if the scrape has been run 
   if (sv == SuperVersion::kSVObsolete ||
       sv->version_number != super_version_number_.load()) {
     RecordTick(ioptions_.statistics, NUMBER_SUPERVERSION_ACQUIRES);

@@ -3485,6 +3485,7 @@ Status DBImpl::WriteImpl(const WriteOptions& write_options,
           log_dir_synced_ = true;
         }
       }
+      // Nan Zhu: insert into memtable 
       if (status.ok()) {
         PERF_TIMER_GUARD(write_memtable_time);
 
